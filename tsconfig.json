@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "CommonJS",
+    "outDir": "./dist",
+    "rootDir": ".", // <--- updated
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "typeRoots": ["./node_modules/@types", "src/types"]
+  },
+  // "include": ["src", "prisma"] // <--- optional, more explicit
+  "include": ["src", "prisma", "src/types/express.d.ts"]
+
+}
