@@ -17,12 +17,17 @@ declare global {
 }
 
 const app = express();
-app.use(cors());
+
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
-// Routes
 app.use("/api/studies", routes);
-
 
 const PORT = process.env.PORT || 4000;
 
