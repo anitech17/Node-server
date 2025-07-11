@@ -9,8 +9,8 @@ import { verifyToken } from "../middleware/verifyToken";
 const router = Router();
 
 router.use("/auth", auth);
-router.use("/student-api", verifyToken, authorizeRoles('student'), StudentAPIs);
-router.use("/educator-api", verifyToken, authorizeRoles('educator'), EducatorAPIs);
-router.use("/admin-api", verifyToken, authorizeRoles('admin'), AdminAPIs);
+router.use("/student", verifyToken, authorizeRoles('student'), StudentAPIs);
+router.use("/educator", verifyToken, authorizeRoles('educator'), EducatorAPIs);
+router.use("/admin", verifyToken, authorizeRoles('admin'), AdminAPIs);
 
 export default router;
