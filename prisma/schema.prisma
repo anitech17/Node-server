@@ -25,6 +25,7 @@ enum ScheduleStatus {
   completed
   postponed
   preponed
+  requested
 }
 
 model User {
@@ -66,7 +67,7 @@ model Educator {
 
 model Course {
   id          String @id @default(uuid()) @db.Uuid
-  title       String
+  title       String @unique
   subject     String
   description String
 
