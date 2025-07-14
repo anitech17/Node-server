@@ -5,7 +5,7 @@ export const getUsers = async (req: Request, res: Response): Promise<void> => {
   try {
     const requesterRole = req.user?.role;
 
-    if (!requesterRole) {
+    if (!requesterRole || requesterRole !== "admin") {
       res.status(401).json({ message: "Unauthorized: Role not found in request." });
     }
 
