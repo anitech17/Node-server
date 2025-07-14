@@ -19,6 +19,14 @@ enum Role {
   admin
 }
 
+enum ScheduleStatus {
+  scheduled
+  cancelled
+  completed
+  postponed
+  preponed
+}
+
 model User {
   id            String   @id @default(uuid()) @db.Uuid
   role          Role
@@ -28,4 +36,106 @@ model User {
   dob           DateTime
   phone         String
   created_at    DateTime @default(now())
+
+  student  Student?
+  educator Educator?
+
+  // No audit logs in this version
+}
+
+model Student {
+  user_id         String @id @db.Uuid
+  parent_whatsapp String
+
+  user           User            @relation(fields: [user_id], references: [id])
+  enrollments    Enrollment[]
+  classSchedules ClassSchedule[]
+  testResults    TestResult[]
+  tests          Test[]          @relation("StudentTests")
+}
+
+model Educator {
+  user_id   String @id @db.Uuid
+  bio       String
+  expertise String
+
+  user           User            @relation(fields: [user_id], references: [id])
+  classSchedules ClassSchedule[]
+  tests          Test[]          @relation("EducatorTests")
+}
+
+model Course {
+  id          String @id @default(uuid()) @db.Uuid
+  title       String
+  subject     String
+  description String
+
+  syllabusSections SyllabusSection[]
+  enrollments      Enrollment[]
+  tests            Test[]
+}
+
+model SyllabusSection {
+  id          String @id @default(uuid()) @db.Uuid
+  course_id   String @db.Uuid // <-- add this type annotation
+  title       String
+  description String
+  order       Int
+
+  course Course @relation(fields: [course_id], references: [id])
+}
+
+model Enrollment {
+  id               String   @id @default(uuid()) @db.Uuid
+  student_id       String   @db.Uuid // <-- fix: match type with Student.user_id
+  course_id        String   @db.Uuid // <-- also match Course.id
+  progress         String
+  percent_complete Int
+  enrolled_on      DateTime @default(now())
+  last_updated     DateTime @updatedAt
+
+  student Student @relation(fields: [student_id], references: [user_id])
+  course  Course  @relation(fields: [course_id], references: [id])
+}
+
+model ClassSchedule {
+  id                String         @id @default(uuid()) @db.Uuid
+  student_id        String         @db.Uuid // ✅ UUID type
+  educator_id       String         @db.Uuid // ✅ UUID type
+  scheduled_at      DateTime
+  join_url          String
+  status            ScheduleStatus
+  discussion_topics String
+  updated_at        DateTime       @updatedAt
+
+  student  Student  @relation(fields: [student_id], references: [user_id])
+  educator Educator @relation(fields: [educator_id], references: [user_id])
+}
+
+model Test {
+  id           String   @id @default(uuid()) @db.Uuid
+  course_id    String   @db.Uuid // ✅ UUID type
+  educator_id  String   @db.Uuid // ✅ UUID type
+  student_id   String   @db.Uuid // ✅ UUID type
+  scheduled_at DateTime
+  join_url     String
+  test_format  String
+
+  course   Course       @relation(fields: [course_id], references: [id])
+  educator Educator     @relation("EducatorTests", fields: [educator_id], references: [user_id])
+  student  Student      @relation("StudentTests", fields: [student_id], references: [user_id])
+  results  TestResult[]
+}
+
+model TestResult {
+  id           String   @id @default(uuid()) @db.Uuid
+  test_id      String   @db.Uuid
+  student_id   String   @db.Uuid
+  marks_scored Int
+  total_marks  Int // ✅ New field
+  feedback     String
+  submitted_at DateTime @default(now())
+
+  test    Test    @relation(fields: [test_id], references: [id])
+  student Student @relation(fields: [student_id], references: [user_id])
 }
