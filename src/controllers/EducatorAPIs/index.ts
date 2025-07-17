@@ -1,1 +1,1 @@
-export * from "./getDetails";
+export * from "./getEducator";

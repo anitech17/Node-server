@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { getDetails } from "../controllers";
+import { getEducator } from "../controllers";
 
 const router = Router();
 
-router.get("/get/educator/details", getDetails);
+router.get("/user/:id", getEducator);
 
 export default router;
 
