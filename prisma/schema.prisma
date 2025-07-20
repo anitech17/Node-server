@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -40,8 +37,6 @@ model User {
 
   student  Student?
   educator Educator?
-
-  // No audit logs in this version
 }
 
 model Student {
@@ -63,13 +58,15 @@ model Educator {
   user           User            @relation(fields: [user_id], references: [id])
   classSchedules ClassSchedule[]
   tests          Test[]          @relation("EducatorTests")
+  enrollments    Enrollment[]    @relation("EducatorEnrollments") // ✅ Back relation
 }
 
 model Course {
-  id          String @id @default(uuid()) @db.Uuid
-  title       String @unique
-  subject     String
-  description String
+  id               String   @id @default(uuid()) @db.Uuid
+  title            String   @unique
+  subject          String
+  description      String
+  class            String
 
   syllabusSections SyllabusSection[]
   enrollments      Enrollment[]
@@ -78,7 +75,7 @@ model Course {
 
 model SyllabusSection {
   id          String @id @default(uuid()) @db.Uuid
-  course_id   String @db.Uuid // <-- add this type annotation
+  course_id   String @db.Uuid
   title       String
   description String
   order       Int
@@ -88,21 +85,23 @@ model SyllabusSection {
 
 model Enrollment {
   id               String   @id @default(uuid()) @db.Uuid
-  student_id       String   @db.Uuid // <-- fix: match type with Student.user_id
-  course_id        String   @db.Uuid // <-- also match Course.id
+  student_id       String   @db.Uuid
+  course_id        String   @db.Uuid
+  educator_id      String   @db.Uuid
   progress         String
   percent_complete Int
   enrolled_on      DateTime @default(now())
   last_updated     DateTime @updatedAt
 
-  student Student @relation(fields: [student_id], references: [user_id])
-  course  Course  @relation(fields: [course_id], references: [id])
+  student  Student  @relation(fields: [student_id], references: [user_id])
+  course   Course   @relation(fields: [course_id], references: [id])
+  educator Educator @relation("EducatorEnrollments", fields: [educator_id], references: [user_id])
 }
 
 model ClassSchedule {
   id                String         @id @default(uuid()) @db.Uuid
-  student_id        String         @db.Uuid // ✅ UUID type
-  educator_id       String         @db.Uuid // ✅ UUID type
+  student_id        String         @db.Uuid
+  educator_id       String         @db.Uuid
   scheduled_at      DateTime
   join_url          String
   status            ScheduleStatus
@@ -115,9 +114,9 @@ model ClassSchedule {
 
 model Test {
   id           String   @id @default(uuid()) @db.Uuid
-  course_id    String   @db.Uuid // ✅ UUID type
-  educator_id  String   @db.Uuid // ✅ UUID type
-  student_id   String   @db.Uuid // ✅ UUID type
+  course_id    String   @db.Uuid
+  educator_id  String   @db.Uuid
+  student_id   String   @db.Uuid
   scheduled_at DateTime
   join_url     String
   test_format  String
@@ -133,7 +132,7 @@ model TestResult {
   test_id      String   @db.Uuid
   student_id   String   @db.Uuid
   marks_scored Int
-  total_marks  Int // ✅ New field
+  total_marks  Int
   feedback     String
   submitted_at DateTime @default(now())
 

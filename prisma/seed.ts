@@ -72,16 +72,17 @@ async function main() {
     }
   });
 
-  // Create a course
-  const course = await prisma.course.upsert({
-    where: { title: "Class 10 - Science" },
-    update: {},
-    create: {
-      title: "Class 10 - Science",
-      subject: "Science",
-      description: "Complete syllabus for CBSE Class 10 Science"
-    }
-  });
+// Create a course
+const course = await prisma.course.upsert({
+  where: { title: "Class 10 - Science" },
+  update: {},
+  create: {
+    title: "Class 10 - Science",
+    subject: "Science",
+    description: "Complete syllabus for CBSE Class 10 Science",
+    class: "10" // 👈 Added this line
+  }
+});
 
   // Create syllabus sections
   await prisma.syllabusSection.createMany({
@@ -102,14 +103,16 @@ async function main() {
   });
 
   // Create enrollment
-  const enrollment = await prisma.enrollment.create({
-    data: {
-      student_id: student.user_id,
-      course_id: course.id,
-      progress: "Chapter 1 Completed",
-      percent_complete: 20
-    }
-  });
+const enrollment = await prisma.enrollment.create({
+  data: {
+    student_id: student.user_id,
+    course_id: course.id,
+    educator_id: educator.user_id, // 👈 Required now
+    progress: "Chapter 1 Completed",
+    percent_complete: 20
+  }
+});
+
 
   // Create class schedule
   const classSchedule = await prisma.classSchedule.create({
