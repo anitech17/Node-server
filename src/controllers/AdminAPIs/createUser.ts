@@ -63,8 +63,15 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
         created_at: newUser.created_at,
       },
     });
+    return;
   } catch (err) {
     console.error("Error creating user:", err);
-    res.status(500).json({ message: "Internal server error" });
+
+    if (err instanceof Error) {
+      res.status(500).json({ message: "Internal server error", error: err.message });
+    } else {
+      res.status(500).json({ message: "Unknown Server Error" });
+    }
+    return;
   }
 };

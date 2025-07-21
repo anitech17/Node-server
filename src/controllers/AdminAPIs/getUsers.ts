@@ -7,6 +7,7 @@ export const getUsers = async (req: Request, res: Response): Promise<void> => {
 
     if (!requesterRole || requesterRole !== "admin") {
       res.status(401).json({ message: "Unauthorized: Role not found in request." });
+      return;
     }
 
     // Validate & parse query parameters
@@ -17,14 +18,16 @@ export const getUsers = async (req: Request, res: Response): Promise<void> => {
     const pageRaw = req.query.page as string;
 
     const limit = limitRaw && !isNaN(+limitRaw) && +limitRaw > 0 ? parseInt(limitRaw) : 10;
-    const page = pageRaw && !isNaN(+pageRaw) && +pageRaw > 0 ? parseInt(pageRaw) : 0;
+    const page = pageRaw && !isNaN(+pageRaw) && +pageRaw >= 0 ? parseInt(pageRaw) : 0;
     const skip = page * limit;
 
     const whereClause: any = {};
 
     if (queryRole) {
-      if (!["admin", "student", "educator"].includes(queryRole)) {
+      const validRoles = ["admin", "student", "educator"];
+      if (!validRoles.includes(queryRole)) {
         res.status(400).json({ message: `Invalid role provided: ${queryRole}` });
+        return;
       }
       whereClause.role = queryRole;
     }
@@ -63,14 +66,15 @@ export const getUsers = async (req: Request, res: Response): Promise<void> => {
       page,
       limit,
     });
+    return;
   } catch (error) {
     console.error("[getUsers] Unexpected error:", error);
 
-    // Optional: add more granular error logging if needed
     if (error instanceof Error) {
       res.status(500).json({ message: "Internal Server Error", error: error.message });
+    } else {
+      res.status(500).json({ message: "Unknown Server Error" });
     }
-
-    res.status(500).json({ message: "Unknown Server Error" });
+    return;
   }
 };

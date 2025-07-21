@@ -12,6 +12,11 @@ export const getEducator = async (req: Request, res: Response): Promise<void> =>
 
     const user_id = req.params.id;
 
+    if (!user_id) {
+      res.status(400).json({ message: "Educator ID is required." });
+      return;
+    }
+
     const educator = await prisma.user.findUnique({
       where: { id: user_id },
       select: {
@@ -92,9 +97,14 @@ export const getEducator = async (req: Request, res: Response): Promise<void> =>
       nextScheduledClass: educatorProfile.classSchedules[0] || null,
       nextTest: educatorProfile.tests[0] || null,
     });
-
+    return;
   } catch (error) {
     console.error("Error in getEducator API:", error);
-    res.status(500).json({ message: "Internal Server Error" });
+    if (error instanceof Error) {
+      res.status(500).json({ message: "Internal Server Error", error: error.message });
+    } else {
+      res.status(500).json({ message: "Unknown Server Error" });
+    }
+    return;
   }
 };

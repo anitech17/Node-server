@@ -13,9 +13,13 @@ export const editUser = async (req: Request, res: Response): Promise<void> => {
     const userId = req.params.id;
     const { name, email, dob, phone } = req.body;
 
+    if (!userId) {
+      res.status(400).json({ message: "Missing user ID in request parameters." });
+      return;
+    }
+
     // Check if user exists
     const existingUser = await prisma.user.findUnique({ where: { id: userId } });
-
     if (!existingUser) {
       res.status(404).json({ message: "User not found." });
       return;
@@ -50,14 +54,21 @@ export const editUser = async (req: Request, res: Response): Promise<void> => {
         id: updatedUser.id,
         name: updatedUser.name,
         email: updatedUser.email,
-        role: updatedUser.role, // return the original role
+        role: updatedUser.role,
         phone: updatedUser.phone,
         dob: updatedUser.dob,
         created_at: updatedUser.created_at,
       },
     });
+    return;
   } catch (err) {
     console.error("Error updating user:", err);
-    res.status(500).json({ message: "Internal server error" });
+
+    if (err instanceof Error) {
+      res.status(500).json({ message: "Internal server error", error: err.message });
+    } else {
+      res.status(500).json({ message: "Unknown Server Error" });
+    }
+    return;
   }
 };

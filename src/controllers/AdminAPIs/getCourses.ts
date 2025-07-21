@@ -8,6 +8,7 @@ export const getCourses = async (req: Request, res: Response): Promise<void> => 
     // Authorization check
     if (!requesterRole || requesterRole !== "admin") {
       res.status(401).json({ message: "Unauthorized: Admin access required." });
+      return;
     }
 
     // Parse query parameters
@@ -61,13 +62,15 @@ export const getCourses = async (req: Request, res: Response): Promise<void> => 
       page,
       limit,
     });
+    return;
   } catch (error) {
     console.error("[getCourses] Unexpected error:", error);
 
     if (error instanceof Error) {
       res.status(500).json({ message: "Internal Server Error", error: error.message });
+    } else {
+      res.status(500).json({ message: "Unknown Server Error" });
     }
-
-    res.status(500).json({ message: "Unknown Server Error" });
+    return;
   }
 };

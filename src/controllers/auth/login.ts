@@ -11,6 +11,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     // Validate input
     if (!email || !password) {
       res.status(400).json({ message: 'Email and password are required.' });
+      return;
     }
 
     // Find user by email
@@ -24,6 +25,15 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
       res.status(401).json({ message: 'Invalid credentials' });
+      return;
+    }
+
+    // Validate JWT secret
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      console.error("JWT_SECRET is not set in environment variables");
+      res.status(500).json({ error: "Internal server error" });
+      return;
     }
 
     // Generate JWT
@@ -31,17 +41,10 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       id: user.id,
       role: user.role,
     };
-    const jwtSecret = process.env.JWT_SECRET;
-
-    if (!jwtSecret) {
-      console.error("JWT_SECRET_KEY is not set in environment variables");
-      res.status(500).json({ error: "Internal server error" });
-      return;
-    }
 
     const token = jwt.sign(payload, jwtSecret, { expiresIn: '1d' });
 
-    // Return token + user role
+    // Return token + user info
     res.status(200).json({
       message: 'Login successful',
       token,
@@ -54,8 +57,14 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         phone: user.phone,
       },
     });
+    return;
   } catch (error) {
     console.error('Login Error:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    if (error instanceof Error) {
+      res.status(500).json({ message: 'Internal server error', error: error.message });
+    } else {
+      res.status(500).json({ message: 'Unknown server error' });
+    }
+    return;
   }
 };

@@ -12,7 +12,6 @@ export const getStudent = async (req: Request, res: Response): Promise<void> => 
 
     const user_id = req.params.id;
 
-    // Fetch student with all related data
     const student = await prisma.user.findUnique({
       where: { id: user_id },
       select: {
@@ -133,9 +132,14 @@ export const getStudent = async (req: Request, res: Response): Promise<void> => 
       nextTest: studentProfile.tests[0] || null,
       lastTestPerformance: studentProfile.testResults[0] || null,
     });
-
   } catch (error) {
     console.error("Error in getStudent API:", error);
-    res.status(500).json({ message: "Internal Server Error" });
+
+    if (error instanceof Error) {
+      res.status(500).json({ message: "Internal Server Error", error: error.message });
+    } else {
+      res.status(500).json({ message: "Unknown Server Error" });
+    }
+    return;
   }
 };
