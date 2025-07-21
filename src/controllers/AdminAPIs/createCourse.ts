@@ -5,7 +5,7 @@ export const createCourse = async (req: Request, res: Response): Promise<void> =
   try {
     const requesterRole = req.user?.role;
 
-    // ✅ Only admins can create courses
+    // Only admins can create courses
     if (!requesterRole || requesterRole !== "admin") {
       res.status(401).json({ message: "Unauthorized: Admin access required." });
     }
@@ -18,7 +18,7 @@ export const createCourse = async (req: Request, res: Response): Promise<void> =
       syllabusSections,
     } = req.body;
 
-    // ✅ Basic validation
+    // Basic validation
     if (!title || !subject || !description || !classLevel) {
       res.status(400).json({ message: "Missing required course fields." });
     }
@@ -36,7 +36,7 @@ export const createCourse = async (req: Request, res: Response): Promise<void> =
       }
     }
 
-    // ✅ Create Course
+    // Create Course
     const newCourse = await prisma.course.create({
       data: {
         title,
@@ -46,7 +46,7 @@ export const createCourse = async (req: Request, res: Response): Promise<void> =
       },
     });
 
-    // ✅ Create Syllabus Sections
+    // Create Syllabus Sections
     await prisma.syllabusSection.createMany({
       data: syllabusSections.map((section: any) => ({
         course_id: newCourse.id,

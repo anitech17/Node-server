@@ -5,12 +5,12 @@ export const getCourses = async (req: Request, res: Response): Promise<void> => 
   try {
     const requesterRole = req.user?.role;
 
-    // ✅ Authorization check
+    // Authorization check
     if (!requesterRole || requesterRole !== "admin") {
       res.status(401).json({ message: "Unauthorized: Admin access required." });
     }
 
-    // ✅ Parse query parameters
+    // Parse query parameters
     const classId = typeof req.query.classId === "string" ? req.query.classId.trim() : undefined;
     const searchTitle = typeof req.query.title === "string" ? req.query.title.trim() : undefined;
 
@@ -21,7 +21,7 @@ export const getCourses = async (req: Request, res: Response): Promise<void> => 
     const page = pageRaw && !isNaN(+pageRaw) && +pageRaw >= 0 ? parseInt(pageRaw) : 0;
     const skip = page * limit;
 
-    // ✅ Construct where clause
+    // Construct where clause
     const whereClause: any = {};
 
     if (classId && classId !== "null") {
@@ -35,7 +35,7 @@ export const getCourses = async (req: Request, res: Response): Promise<void> => 
       };
     }
 
-    // ✅ Fetch data & total count in parallel
+    // Fetch data & total count in parallel
     const [courses, total] = await Promise.all([
       prisma.course.findMany({
         where: whereClause,
