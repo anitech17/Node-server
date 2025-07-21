@@ -11,11 +11,26 @@ export const scheduleClass = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
-    const { student_id, educator_id, scheduled_at, discussion_topics } = req.body;
+    const {
+      student_id,
+      educator_id,
+      scheduled_at,
+      discussion_topics,
+      course_id,
+      syllabus_section_ids,
+    } = req.body;
 
     // Basic validation
-    if (!student_id || !educator_id || !scheduled_at || !discussion_topics) {
-      res.status(400).json({ message: "Missing required fields." });
+    if (
+      !student_id ||
+      !educator_id ||
+      !scheduled_at ||
+      !discussion_topics ||
+      !course_id ||
+      !Array.isArray(syllabus_section_ids) ||
+      syllabus_section_ids.length === 0
+    ) {
+      res.status(400).json({ message: "Missing required fields or syllabus sections." });
       return;
     }
 
@@ -40,6 +55,13 @@ export const scheduleClass = async (req: Request, res: Response): Promise<void> 
           join_url,
           status: "scheduled",
           discussion_topics,
+          course_id,
+          syllabusSections: {
+            connect: syllabus_section_ids.map((id: string) => ({ id })),
+          },
+        },
+        include: {
+          syllabusSections: true,
         },
       });
 
@@ -47,7 +69,6 @@ export const scheduleClass = async (req: Request, res: Response): Promise<void> 
         message: "Class scheduled successfully",
         class: newClass,
       });
-      return;
     } catch (dbError: any) {
       console.error("Database error while creating class:", dbError);
 
@@ -57,7 +78,6 @@ export const scheduleClass = async (req: Request, res: Response): Promise<void> 
       }
 
       res.status(500).json({ message: "Database error occurred while scheduling the class." });
-      return;
     }
   } catch (error) {
     console.error("Unexpected error while scheduling class:", error);
@@ -66,6 +86,5 @@ export const scheduleClass = async (req: Request, res: Response): Promise<void> 
     } else {
       res.status(500).json({ message: "Unknown Server Error" });
     }
-    return;
   }
 };

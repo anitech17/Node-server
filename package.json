@@ -12,7 +12,8 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:migrate:prod": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
-    "prisma:reset": "prisma migrate reset --force --skip-seed",
+    "prisma:reset": "npx prisma migrate reset",
+    "prisma:resetf": "npx prisma migrate reset --force",
     "prisma:introspect": "prisma introspect",
     "prisma:format": "prisma format",
     "seed": "ts-node prisma/seed.ts"

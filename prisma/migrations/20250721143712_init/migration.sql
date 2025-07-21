@@ -41,6 +41,7 @@ CREATE TABLE "Course" (
     "title" TEXT NOT NULL,
     "subject" TEXT NOT NULL,
     "description" TEXT NOT NULL,
+    "class" TEXT NOT NULL,
 
     CONSTRAINT "Course_pkey" PRIMARY KEY ("id")
 );
@@ -61,6 +62,7 @@ CREATE TABLE "Enrollment" (
     "id" UUID NOT NULL,
     "student_id" UUID NOT NULL,
     "course_id" UUID NOT NULL,
+    "educator_id" UUID NOT NULL,
     "progress" TEXT NOT NULL,
     "percent_complete" INTEGER NOT NULL,
     "enrolled_on" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -74,6 +76,7 @@ CREATE TABLE "ClassSchedule" (
     "id" UUID NOT NULL,
     "student_id" UUID NOT NULL,
     "educator_id" UUID NOT NULL,
+    "course_id" UUID NOT NULL,
     "scheduled_at" TIMESTAMP(3) NOT NULL,
     "join_url" TEXT NOT NULL,
     "status" "ScheduleStatus" NOT NULL,
@@ -92,6 +95,7 @@ CREATE TABLE "Test" (
     "scheduled_at" TIMESTAMP(3) NOT NULL,
     "join_url" TEXT NOT NULL,
     "test_format" TEXT NOT NULL,
+    "status" "ScheduleStatus" NOT NULL,
 
     CONSTRAINT "Test_pkey" PRIMARY KEY ("id")
 );
@@ -109,11 +113,33 @@ CREATE TABLE "TestResult" (
     CONSTRAINT "TestResult_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "_TestSyllabus" (
+    "A" UUID NOT NULL,
+    "B" UUID NOT NULL,
+
+    CONSTRAINT "_TestSyllabus_AB_pkey" PRIMARY KEY ("A","B")
+);
+
+-- CreateTable
+CREATE TABLE "_ClassSyllabus" (
+    "A" UUID NOT NULL,
+    "B" UUID NOT NULL,
+
+    CONSTRAINT "_ClassSyllabus_AB_pkey" PRIMARY KEY ("A","B")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Course_title_key" ON "Course"("title");
+
+-- CreateIndex
+CREATE INDEX "_TestSyllabus_B_index" ON "_TestSyllabus"("B");
+
+-- CreateIndex
+CREATE INDEX "_ClassSyllabus_B_index" ON "_ClassSyllabus"("B");
 
 -- AddForeignKey
 ALTER TABLE "Student" ADD CONSTRAINT "Student_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -131,10 +157,16 @@ ALTER TABLE "Enrollment" ADD CONSTRAINT "Enrollment_student_id_fkey" FOREIGN KEY
 ALTER TABLE "Enrollment" ADD CONSTRAINT "Enrollment_course_id_fkey" FOREIGN KEY ("course_id") REFERENCES "Course"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Enrollment" ADD CONSTRAINT "Enrollment_educator_id_fkey" FOREIGN KEY ("educator_id") REFERENCES "Educator"("user_id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "ClassSchedule" ADD CONSTRAINT "ClassSchedule_student_id_fkey" FOREIGN KEY ("student_id") REFERENCES "Student"("user_id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ClassSchedule" ADD CONSTRAINT "ClassSchedule_educator_id_fkey" FOREIGN KEY ("educator_id") REFERENCES "Educator"("user_id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ClassSchedule" ADD CONSTRAINT "ClassSchedule_course_id_fkey" FOREIGN KEY ("course_id") REFERENCES "Course"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Test" ADD CONSTRAINT "Test_course_id_fkey" FOREIGN KEY ("course_id") REFERENCES "Course"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -150,3 +182,15 @@ ALTER TABLE "TestResult" ADD CONSTRAINT "TestResult_test_id_fkey" FOREIGN KEY ("
 
 -- AddForeignKey
 ALTER TABLE "TestResult" ADD CONSTRAINT "TestResult_student_id_fkey" FOREIGN KEY ("student_id") REFERENCES "Student"("user_id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_TestSyllabus" ADD CONSTRAINT "_TestSyllabus_A_fkey" FOREIGN KEY ("A") REFERENCES "SyllabusSection"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_TestSyllabus" ADD CONSTRAINT "_TestSyllabus_B_fkey" FOREIGN KEY ("B") REFERENCES "Test"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_ClassSyllabus" ADD CONSTRAINT "_ClassSyllabus_A_fkey" FOREIGN KEY ("A") REFERENCES "ClassSchedule"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_ClassSyllabus" ADD CONSTRAINT "_ClassSyllabus_B_fkey" FOREIGN KEY ("B") REFERENCES "SyllabusSection"("id") ON DELETE CASCADE ON UPDATE CASCADE;

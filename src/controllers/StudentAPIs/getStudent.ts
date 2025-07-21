@@ -10,10 +10,10 @@ export const getStudent = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    const user_id = req.params.id;
+    const studentId = req.params.student_id;
 
     const student = await prisma.user.findUnique({
-      where: { id: user_id },
+      where: { id: studentId },
       select: {
         id: true,
         name: true,
@@ -54,6 +54,19 @@ export const getStudent = async (req: Request, res: Response): Promise<void> => 
                 join_url: true,
                 status: true,
                 discussion_topics: true,
+                course: {
+                  select: {
+                    id: true,
+                    title: true,
+                  },
+                },
+                syllabusSections: {
+                  select: {
+                    id: true,
+                    title: true,
+                    order: true,
+                  },
+                },
                 educator: {
                   select: {
                     user: {
@@ -82,8 +95,27 @@ export const getStudent = async (req: Request, res: Response): Promise<void> => 
                 test_format: true,
                 course: {
                   select: {
+                    id: true,
                     title: true,
                     subject: true,
+                  },
+                },
+                syllabusSections: {
+                  select: {
+                    id: true,
+                    title: true,
+                    order: true,
+                  },
+                },
+                educator: {
+                  select: {
+                    user: {
+                      select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                      },
+                    },
                   },
                 },
               },

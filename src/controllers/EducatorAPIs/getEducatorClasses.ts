@@ -28,9 +28,39 @@ export const getEducatorClasses = async (req: Request, res: Response): Promise<v
       ScheduleStatus.completed,
     ];
 
-    const requestedStatuses: ScheduleStatus[] = [
-      ScheduleStatus.requested,
-    ];
+    const requestedStatuses: ScheduleStatus[] = [ScheduleStatus.requested];
+
+    const commonSelect = {
+      id: true,
+      scheduled_at: true,
+      join_url: true,
+      status: true,
+      discussion_topics: true,
+      course: {
+        select: {
+          id: true,
+          title: true,
+        },
+      },
+      syllabusSections: {
+        select: {
+          id: true,
+          title: true,
+          order: true,
+        },
+      },
+      student: {
+        select: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+      },
+    };
 
     const [scheduledClasses, completedClasses, requestedClasses] = await Promise.all([
       prisma.classSchedule.findMany({
@@ -39,24 +69,7 @@ export const getEducatorClasses = async (req: Request, res: Response): Promise<v
           status: { in: scheduledStatuses },
         },
         orderBy: { scheduled_at: "asc" },
-        select: {
-          id: true,
-          scheduled_at: true,
-          join_url: true,
-          status: true,
-          discussion_topics: true,
-          student: {
-            select: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  email: true,
-                },
-              },
-            },
-          },
-        },
+        select: commonSelect,
       }),
       prisma.classSchedule.findMany({
         where: {
@@ -64,24 +77,7 @@ export const getEducatorClasses = async (req: Request, res: Response): Promise<v
           status: { in: completedStatuses },
         },
         orderBy: { scheduled_at: "desc" },
-        select: {
-          id: true,
-          scheduled_at: true,
-          join_url: true,
-          status: true,
-          discussion_topics: true,
-          student: {
-            select: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  email: true,
-                },
-              },
-            },
-          },
-        },
+        select: commonSelect,
       }),
       prisma.classSchedule.findMany({
         where: {
@@ -89,24 +85,7 @@ export const getEducatorClasses = async (req: Request, res: Response): Promise<v
           status: { in: requestedStatuses },
         },
         orderBy: { scheduled_at: "asc" },
-        select: {
-          id: true,
-          scheduled_at: true,
-          join_url: true,
-          status: true,
-          discussion_topics: true,
-          student: {
-            select: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  email: true,
-                },
-              },
-            },
-          },
-        },
+        select: commonSelect,
       }),
     ]);
 

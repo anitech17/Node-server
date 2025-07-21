@@ -10,15 +10,15 @@ export const getEducator = async (req: Request, res: Response): Promise<void> =>
       return;
     }
 
-    const user_id = req.params.id;
+    const educatorId = req.params.educator_id;
 
-    if (!user_id) {
+    if (!educatorId) {
       res.status(400).json({ message: "Educator ID is required." });
       return;
     }
 
     const educator = await prisma.user.findUnique({
-      where: { id: user_id },
+      where: { id: educatorId },
       select: {
         id: true,
         name: true,
@@ -44,7 +44,20 @@ export const getEducator = async (req: Request, res: Response): Promise<void> =>
                 join_url: true,
                 status: true,
                 discussion_topics: true,
-                educator: {
+                course: {
+                  select: {
+                    id: true,
+                    title: true,
+                  },
+                },
+                syllabusSections: {
+                  select: {
+                    id: true,
+                    title: true,
+                    order: true,
+                  },
+                },
+                student: {
                   select: {
                     user: {
                       select: {
@@ -72,8 +85,20 @@ export const getEducator = async (req: Request, res: Response): Promise<void> =>
                 test_format: true,
                 course: {
                   select: {
+                    id: true,
                     title: true,
                     subject: true,
+                  },
+                },
+                student: {
+                  select: {
+                    user: {
+                      select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                      },
+                    },
                   },
                 },
               },

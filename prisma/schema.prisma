@@ -58,7 +58,7 @@ model Educator {
   user           User            @relation(fields: [user_id], references: [id])
   classSchedules ClassSchedule[]
   tests          Test[]          @relation("EducatorTests")
-  enrollments    Enrollment[]    @relation("EducatorEnrollments") // ✅ Back relation
+  enrollments    Enrollment[]    @relation("EducatorEnrollments")
 }
 
 model Course {
@@ -71,16 +71,19 @@ model Course {
   syllabusSections SyllabusSection[]
   enrollments      Enrollment[]
   tests            Test[]
+  classSchedules   ClassSchedule[]
 }
 
 model SyllabusSection {
-  id          String @id @default(uuid()) @db.Uuid
-  course_id   String @db.Uuid
-  title       String
-  description String
-  order       Int
+  id                String            @id @default(uuid()) @db.Uuid
+  course_id         String            @db.Uuid
+  title             String
+  description       String
+  order             Int
 
-  course Course @relation(fields: [course_id], references: [id])
+  course            Course            @relation(fields: [course_id], references: [id])
+  classSchedules    ClassSchedule[]   @relation("ClassSyllabus")
+  tests             Test[]            @relation("TestSyllabus")
 }
 
 model Enrollment {
@@ -99,32 +102,37 @@ model Enrollment {
 }
 
 model ClassSchedule {
-  id                String         @id @default(uuid()) @db.Uuid
-  student_id        String         @db.Uuid
-  educator_id       String         @db.Uuid
+  id                String             @id @default(uuid()) @db.Uuid
+  student_id        String             @db.Uuid
+  educator_id       String             @db.Uuid
+  course_id         String             @db.Uuid
   scheduled_at      DateTime
   join_url          String
   status            ScheduleStatus
   discussion_topics String
-  updated_at        DateTime       @updatedAt
+  updated_at        DateTime           @updatedAt
 
-  student  Student  @relation(fields: [student_id], references: [user_id])
-  educator Educator @relation(fields: [educator_id], references: [user_id])
+  student           Student            @relation(fields: [student_id], references: [user_id])
+  educator          Educator           @relation(fields: [educator_id], references: [user_id])
+  course            Course             @relation(fields: [course_id], references: [id])
+  syllabusSections  SyllabusSection[]  @relation("ClassSyllabus")
 }
 
 model Test {
-  id           String   @id @default(uuid()) @db.Uuid
-  course_id    String   @db.Uuid
-  educator_id  String   @db.Uuid
-  student_id   String   @db.Uuid
-  scheduled_at DateTime
-  join_url     String
-  test_format  String
+  id                String             @id @default(uuid()) @db.Uuid
+  course_id         String             @db.Uuid
+  educator_id       String             @db.Uuid
+  student_id        String             @db.Uuid
+  scheduled_at      DateTime
+  join_url          String
+  test_format       String
+  status            ScheduleStatus
 
-  course   Course       @relation(fields: [course_id], references: [id])
-  educator Educator     @relation("EducatorTests", fields: [educator_id], references: [user_id])
-  student  Student      @relation("StudentTests", fields: [student_id], references: [user_id])
-  results  TestResult[]
+  course            Course             @relation(fields: [course_id], references: [id])
+  educator          Educator           @relation("EducatorTests", fields: [educator_id], references: [user_id])
+  student           Student            @relation("StudentTests", fields: [student_id], references: [user_id])
+  results           TestResult[]
+  syllabusSections  SyllabusSection[]  @relation("TestSyllabus")
 }
 
 model TestResult {
