@@ -6,3 +6,4 @@ export * from "./createCourse";
 export * from "./deleteCourse";
 export * from "./editCourse";
 export * from "./getCourses";
+export * from "./getCourseSyllabu";
